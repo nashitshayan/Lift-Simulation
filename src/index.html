@@ -14,8 +14,6 @@
 		</header>
 		<main>
 			<section id="action_panel">
-				<button class="" id="btn_reset">Reset</button>
-
 				<div class="input-group">
 					<label for="floor_input">Enter Number of Floors: </label
 					><input id="floor_input" type="number" min="0" />
@@ -24,9 +22,13 @@
 					<label for="lift_input">Enter Number of Lifts: </label
 					><input id="lift_input" type="number" min="0" />
 				</div>
+				<button id="btn_make_building">Let's Lift!</button>
+				<button class="hide" id="btn_reset">Reset</button>
 			</section>
 			<section id="content">
-				<button id="btn_make_building">Let's Lift!</button>
+				<span id="default_msg">
+					That's a lot of empty space! Let's build something here!
+				</span>
 			</section>
 		</main>
 		<footer>
