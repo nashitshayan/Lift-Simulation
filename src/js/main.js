@@ -49,7 +49,12 @@ const app = (() => {
 			alert('please enter no of floors and lifts');
 			return;
 		}
-
+		if (no_of_lifts > 6) {
+			alert(
+				"Sorry! Currently, we only have space for maximum 6 lifts. We're working to expand it!",
+			);
+			return;
+		}
 		storeManager.setStore({
 			building: createBuilding(no_of_floors, no_of_lifts),
 		});
