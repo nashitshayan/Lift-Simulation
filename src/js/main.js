@@ -123,7 +123,6 @@ const app = (() => {
 	}
 	function buildUI(container, building) {
 		const { no_of_floors, no_of_lifts, lifts } = building;
-
 		const floors = Array(no_of_floors)
 			.fill(null)
 			.map((_, index) => {
@@ -135,7 +134,7 @@ const app = (() => {
 
 				const lift_btn_up = elem('button');
 				lift_btn_up.className = `btn_lift btn_lift--up ${
-					index === no_of_floors - 1 ? 'hide' : ''
+					no_of_floors > 1 && index === no_of_floors - 1 ? 'hide' : ''
 				}`;
 				lift_btn_up.textContent = 'Up';
 
