@@ -1,33 +1,3 @@
-function FloorFactory(floor_no) {
-	return {
-		floor_no,
-	};
-}
-
-function FloorManager(no_of_floors) {
-	let building = Array(+no_of_floors)
-		.fill(null)
-		.map((_, i) => FloorFactory(i));
-
-	return { building };
-}
-
-function LiftFactory(lift_no) {
-	return {
-		lift_no,
-		current_floor: 0,
-	};
-}
-
-function LiftManager(no_of_lifts) {
-	let lifts = [];
-	for (let i = 1; i <= no_of_lifts; i++) {
-		const newLift = LiftFactory(i);
-		lifts.push(newLift);
-	}
-	return { lifts };
-}
-
 const domElems = (() => {
 	return {
 		build_btn: document.getElementById('btn_make_building'),
@@ -39,8 +9,28 @@ const domElems = (() => {
 	};
 })();
 
-const app = (() => {
+const storeManager = (() => {
 	let store = {};
+
+	function clearStore() {
+		store = {};
+	}
+	function setStore(data) {
+		store = { ...store, ...data };
+	}
+
+	function getStore() {
+		return store;
+	}
+	return {
+		setStore,
+		getStore,
+		clearStore,
+	};
+})();
+
+const app = (() => {
+	storeManager.clearStore();
 
 	const {
 		build_btn,
@@ -51,41 +41,71 @@ const app = (() => {
 		building_container,
 	} = domElems;
 
-	const setStore = (data) => {
-		store = { ...store, ...data };
-	};
-	const clearStore = () => {
-		store = {};
-	};
 	const handleMakeBuilding = () => {
-		const no_of_floors = floor_ip.value;
-		const no_of_lifts = lift_ip.value;
+		const no_of_floors = +floor_ip.value;
+		const no_of_lifts = +lift_ip.value;
 
 		if (!no_of_floors || !no_of_lifts) {
 			alert('please enter no of floors and lifts');
 			return;
 		}
 
-		const { building } = FloorManager(no_of_floors);
-		const { lifts } = LiftManager(no_of_lifts);
-
-		setStore({ building, lifts });
+		storeManager.setStore({
+			building: createBuilding(no_of_floors, no_of_lifts),
+		});
 		toggleContent();
 		render();
 	};
 	const handleReset = () => {
-		clearStore();
+		storeManager.clearStore();
 		clearInput();
 		clearUI(building_container);
 
 		addDefaultMsg(building_container);
 		toggleContent();
 	};
+	const handleLiftUp = (calling_floor) => {
+		const store = storeManager.getStore();
+		const {
+			building: { lifts },
+		} = store;
+
+		const isSameFloor = lifts.some(
+			(lift) => lift.current_floor === calling_floor,
+		);
+
+		if (isSameFloor) {
+			alert('The lift is already on current floor.');
+			return;
+		}
+
+		const nearestLift = findNearestLift(lifts, calling_floor);
+		const updatedLift = { ...nearestLift, current_floor: calling_floor };
+
+		storeManager.setStore({
+			building: {
+				...store.building,
+				lifts: store.building.lifts.map((oldLift, index) => {
+					if (oldLift.lift_no === updatedLift.lift_no) return updatedLift;
+					return oldLift;
+				}),
+			},
+		});
+
+		moveLift(nearestLift.current_floor, updatedLift);
+	};
+
+	const handleLiftDown = (calling_floor) => {
+		handleLiftUp(calling_floor);
+	};
+
+	build_btn.addEventListener('click', handleMakeBuilding);
+	reset_btn.addEventListener('click', handleReset);
 
 	function render() {
+		const { building } = storeManager.getStore();
 		clearUI(building_container);
-		const { floors } = buildUI(store.building);
-		building_container.append(...floors);
+		buildUI(building_container, building);
 	}
 	function toggleContent() {
 		build_btn.classList.toggle('hide');
@@ -96,44 +116,82 @@ const app = (() => {
 		floor_ip.value = '';
 		lift_ip.value = '';
 	}
+	function buildUI(container, building) {
+		const { no_of_floors, no_of_lifts, lifts } = building;
 
-	build_btn.addEventListener('click', handleMakeBuilding);
-	reset_btn.addEventListener('click', handleReset);
+		const floors = Array(no_of_floors)
+			.fill(null)
+			.map((_, index) => {
+				const floor_container = elem('div');
+				floor_container.className = 'floor_container';
+
+				const lift_btn_container = elem('div');
+				lift_btn_container.className = 'lift_btn_container';
+
+				const lift_btn_up = elem('button');
+				lift_btn_up.className = `btn_lift btn_lift--up ${
+					index === no_of_floors - 1 ? 'hide' : ''
+				}`;
+				lift_btn_up.textContent = 'Up';
+
+				const lift_btn_down = elem('button');
+				lift_btn_down.className = `btn_lift btn_lift--down ${
+					index === 0 ? 'hide' : ''
+				}`;
+				lift_btn_down.textContent = 'Down';
+
+				lift_btn_up.addEventListener('click', () => handleLiftUp(index + 1));
+				lift_btn_down.addEventListener('click', () =>
+					handleLiftDown(index + 1),
+				);
+
+				lift_btn_container.append(lift_btn_up, lift_btn_down);
+
+				const floor_name = elem('span');
+				floor_name.className = 'floor_name';
+				floor_name.textContent = `Floor ${index + 1}`;
+
+				floor_container.append(lift_btn_container, floor_name);
+
+				if (index === 0) {
+					const lifts_markup = lifts.map((_, indx) => {
+						const lift_div = elem('div');
+						lift_div.className = `lift ${indx === 0 ? 'first' : ''}`;
+						lift_div.dataset.lift_no = _.lift_no;
+						return lift_div;
+					});
+					floor_container.append(...lifts_markup);
+				}
+				return floor_container;
+			})
+			.reverse();
+
+		container.append(...floors);
+		// return { floors };
+	}
+	function moveLift(old_floor, { lift_no, current_floor }) {
+		const lift_div = document.querySelector(`[data-lift_no='${lift_no}']`);
+		const current_pos = findCurrentPos(lift_div.style.transform);
+
+		const new_pos = 200 * (old_floor - current_floor);
+
+		lift_div.style.transform = `translateY(${current_pos + new_pos}px)`;
+	}
 })();
 
-function buildUI(building) {
-	const floors = building
-		.map((floor, index) => {
-			const floor_container = elem('div');
-			floor_container.className = 'floor_container';
+function createBuilding(no_of_floors, no_of_lifts) {
+	const lifts = Array(no_of_lifts)
+		.fill(null)
+		.map((_, ind) => ({
+			lift_no: ind + 1,
+			current_floor: 1,
+		}));
 
-			const elevator_btn_container = elem('div');
-			elevator_btn_container.className = 'elevator_btn_container';
-
-			const elevator_btn_up = elem('button');
-			elevator_btn_up.className = `btn_elevator btn_elevator--up ${
-				index === building.length - 1 ? 'hide' : ''
-			}`;
-			elevator_btn_up.textContent = 'Up';
-
-			const elevator_btn_down = elem('button');
-			elevator_btn_down.className = `btn_elevator btn_elevator--down ${
-				index === 0 ? 'hide' : ''
-			}`;
-			elevator_btn_down.textContent = 'Down';
-
-			elevator_btn_container.append(elevator_btn_up, elevator_btn_down);
-
-			const floor_name = elem('span');
-			floor_name.className = 'floor_name';
-			floor_name.textContent = `Floor ${floor.floor_no}`;
-
-			floor_container.append(elevator_btn_container, floor_name);
-			return floor_container;
-		})
-		.reverse();
-
-	return { floors };
+	return {
+		no_of_floors,
+		no_of_lifts,
+		lifts,
+	};
 }
 function clearUI(element) {
 	while (element.firstChild) {
@@ -147,10 +205,24 @@ function addDefaultMsg(container) {
 		"That's a lot of empty space! Let's build something here!";
 	container.append(default_msg);
 }
-function getFloorName(floor_no) {
-	if (floor_no === 0) return 'Ground Floor';
-	else return `Floor ${floor_no}`;
+function findNearestLift(lifts, calling_floor) {
+	const floor_differences = lifts.map((_) =>
+		Math.abs(_.current_floor - calling_floor),
+	);
+	const nearestFloorIndex = floor_differences.indexOf(
+		Math.min(...floor_differences),
+	);
+	return lifts[nearestFloorIndex];
+}
+function findCurrentPos(str) {
+	const regex = /\-?[0-9]*/g;
+	return parseInt(str.match(regex).filter(Boolean)[0] || 0);
 }
 function elem(el) {
 	return document.createElement(el);
 }
+
+// function getFloorName(floor_no) {
+// 	if (floor_no === 0) return 'Ground Floor';
+// 	else return `Floor ${floor_no}`;
+// }
