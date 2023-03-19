@@ -1,4 +1,5 @@
 # Lift-Simulation
+# 👉[Live Preview](https://lift-simulation-nashit.netlify.app/)👈
 Create a web app where you can simulate lift mechanics for a client
 
 # UI Example
