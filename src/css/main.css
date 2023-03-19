@@ -8,6 +8,7 @@
 	--clr--red: #f24236;
 
 	--ff-primary: Verdana, sans-serif;
+	--b-rad: 6px;
 }
 
 *,
@@ -28,7 +29,7 @@ body {
 }
 
 main {
-	width: min(1400px, 90%);
+	width: 90%;
 	margin: 2em auto;
 	display: flex;
 	flex-direction: column;
@@ -52,6 +53,7 @@ footer a {
 
 #action_panel {
 	background-color: var(--clr--secondary);
+	border-radius: var(--b-rad);
 	display: flex;
 	flex-direction: column;
 	gap: 0.5em;
@@ -61,14 +63,30 @@ footer a {
 .input-group {
 	/* border: 1px solid blue; */
 	display: flex;
+	align-items: center;
 	justify-content: space-between;
 }
-/* #action_panel input[type='number'] {
-	width: 3em;
-	padding: 0.25em;
+#action_panel input {
+	width: 30%;
+	height: 2em;
+	padding: 0 0.5em;
+	border: none;
+	border-radius: var(--b-rad);
+}
+#action_panel input:focus {
+	outline: 1px solid black;
+}
+/* Chrome, Safari, Edge, Opera */
+#action_panel input::-webkit-outer-spin-button,
+#action_panel input::-webkit-inner-spin-button {
+	-webkit-appearance: none;
+	margin: 0;
+}
 
-} */
-
+/* Firefox */
+#action_panel input[type='number'] {
+	-moz-appearance: textfield;
+}
 #building {
 	min-height: 500px;
 	/* overflow: auto; */
@@ -86,6 +104,7 @@ footer a {
 	height: 100%;
 	font-size: 4rem;
 	border: none;
+	border-radius: var(--b-rad);
 	cursor: pointer;
 	transition: all 0.2s ease-in;
 }
@@ -98,7 +117,9 @@ footer a {
 #btn_reset {
 	background-color: var(--clr--red);
 }
-
+#btn_reset:hover {
+	background-color: #f74d40;
+}
 #default_msg {
 	font-size: 2rem;
 	text-align: center;
@@ -106,7 +127,7 @@ footer a {
 
 #building {
 	width: 100%;
-	counter-reset: floor;
+	border-radius: var(--b-rad);
 }
 
 .floor_container {
@@ -120,16 +141,16 @@ footer a {
 	gap: 2em;
 }
 
-.lift.first {
-	margin-left: 7em;
-}
 .lift {
 	width: 75px;
 	height: 150px;
 	background-color: var(--clr--blue);
+	border-radius: var(--b-rad);
 	transition: all 2s ease-in;
 }
-
+.lift.first {
+	margin-left: 7em;
+}
 .lift_btn_container {
 	position: absolute;
 	top: 40%;
@@ -140,9 +161,10 @@ footer a {
 .btn_lift {
 	font-size: 1rem;
 	font-weight: bold;
+	cursor: pointer;
 	border: none;
 	padding: 0.5em 1.5em;
-	border-radius: 8px;
+	border-radius: var(--b-rad);
 }
 
 .btn_lift--up {
