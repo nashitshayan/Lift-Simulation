@@ -30,8 +30,6 @@ const storeManager = (() => {
 })();
 
 const app = (() => {
-	storeManager.clearStore();
-
 	const {
 		build_btn,
 		reset_btn,
@@ -69,6 +67,7 @@ const app = (() => {
 		addDefaultMsg(building_container);
 		toggleContent();
 	};
+
 	const handleLiftUp = (calling_floor) => {
 		const store = storeManager.getStore();
 		const {
@@ -97,9 +96,11 @@ const app = (() => {
 			},
 		});
 
-		moveLift(nearestLift.current_floor, updatedLift);
+		const nearest_lift_no = updatedLift.lift_no;
+		const floor_difference = nearestLift.current_floor - calling_floor;
+		console.log(floor_difference);
+		moveLift(nearest_lift_no, floor_difference);
 	};
-
 	const handleLiftDown = (calling_floor) => {
 		handleLiftUp(calling_floor);
 	};
@@ -173,12 +174,15 @@ const app = (() => {
 		container.append(...floors);
 		// return { floors };
 	}
-	function moveLift(old_floor, { lift_no, current_floor }) {
+	function moveLift(lift_no, floor_difference) {
 		const lift_div = document.querySelector(`[data-lift_no='${lift_no}']`);
 		const current_pos = findCurrentPos(lift_div.style.transform);
 
-		const new_pos = 200 * (old_floor - current_floor);
+		const new_pos = 200 * floor_difference;
 
+		lift_div.style.transition = `all ${
+			Math.abs(floor_difference) * 2
+		}s ease-in`;
 		lift_div.style.transform = `translateY(${current_pos + new_pos}px)`;
 	}
 })();
