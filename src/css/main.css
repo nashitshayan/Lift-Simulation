@@ -1,11 +1,13 @@
 :root {
-	--clr--primary: #fffcf2;
-	--clr--secondary: #d9d9d9;
+	--clr--primary: #eeeeee;
+	--clr--secondary: #1e1e1e;
 	--clr--accent: #3d84a4;
 	--clr--blue: #3d84a4;
 	--clr--green: #38b000;
 	--clr--yellow: #f5f749;
 	--clr--red: #f24236;
+
+	--clr--lift-doors: #dcdcdc;
 
 	--ff-primary: Verdana, sans-serif;
 	--b-rad: 6px;
@@ -22,6 +24,7 @@
 body {
 	background-color: var(--clr--primary);
 	font-family: var(--ff-primary);
+	color: var(--clr--primary);
 	min-height: 100vh;
 	display: flex;
 	flex-direction: column;
@@ -134,7 +137,7 @@ footer a {
 	height: 200px;
 	min-width: 70%;
 	margin: 0 auto;
-	border-bottom: 2px solid black;
+	border-bottom: 2px solid var(--clr--primary);
 	position: relative;
 	display: flex;
 	align-items: end;
@@ -142,11 +145,63 @@ footer a {
 }
 
 .lift {
-	width: 75px;
+	width: 80px;
 	height: 150px;
-	background-color: var(--clr--blue);
-	border-radius: var(--b-rad);
-	transition: all 2s ease-in;
+	background-color: var(--clr--primary);
+	position: relative;
+
+	--left-door-anim-name: '';
+	--right-door-anim-name: '';
+	--door-anim-duration: 0;
+
+	overflow: hidden;
+}
+
+.lift::before,
+.lift::after {
+	content: '';
+	display: block;
+	height: 150px;
+	width: 40px;
+	background-color: var(--clr--lift-doors);
+	position: absolute;
+	animation-duration: var(--door-anim-duration);
+	animation-iteration-count: 1;
+	animation-delay: 0.5s;
+}
+.lift::before {
+	border-right: 1px solid var(--clr--secondary);
+	animation-name: var(--left-door-anim-name);
+}
+.lift::after {
+	right: 0;
+	animation-name: var(--right-door-anim-name);
+}
+@keyframes left-door-open {
+	0% {
+		border: none;
+		left: 0;
+	}
+	50% {
+		border: none;
+		left: -40px;
+	}
+
+	100% {
+		border: none;
+		left: 0;
+	}
+}
+@keyframes right-door-open {
+	0% {
+		right: 0;
+	}
+	50% {
+		right: -40px;
+	}
+	100% {
+		right: 0;
+	}
 }
 .lift.first {
 	margin-left: 7em;

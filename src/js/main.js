@@ -98,9 +98,29 @@ const app = (() => {
 
 		const nearest_lift_no = updatedLift.lift_no;
 		const floor_difference = nearestLift.current_floor - calling_floor;
-		console.log(floor_difference);
-		moveLift(nearest_lift_no, floor_difference);
+		const travel_time = Math.abs(floor_difference) * 2;
+
+		const { lift_div } = moveLift(
+			nearest_lift_no,
+			floor_difference,
+			travel_time,
+		);
+		setDoorAnimation(lift_div);
+		setTimeout(() => {
+			setDoorAnimation(lift_div, 'left-door-open', 'right-door-open', '5s');
+		}, travel_time * 1000);
 	};
+
+	function setDoorAnimation(
+		lift_div,
+		right_door_anim = '',
+		left_door_anim = '',
+		anim_duration = '',
+	) {
+		lift_div.style.setProperty('--left-door-anim-name', left_door_anim);
+		lift_div.style.setProperty('--right-door-anim-name', right_door_anim);
+		lift_div.style.setProperty('--door-anim-duration', anim_duration);
+	}
 	const handleLiftDown = (calling_floor) => {
 		handleLiftUp(calling_floor);
 	};
@@ -174,16 +194,15 @@ const app = (() => {
 		container.append(...floors);
 		// return { floors };
 	}
-	function moveLift(lift_no, floor_difference) {
+	function moveLift(lift_no, floor_difference, travel_time) {
 		const lift_div = document.querySelector(`[data-lift_no='${lift_no}']`);
 		const current_pos = findCurrentPos(lift_div.style.transform);
 
 		const new_pos = 200 * floor_difference;
 
-		lift_div.style.transition = `all ${
-			Math.abs(floor_difference) * 2
-		}s ease-in`;
+		lift_div.style.transition = `all ${travel_time}s ease-in`;
 		lift_div.style.transform = `translateY(${current_pos + new_pos}px)`;
+		return { lift_div };
 	}
 })();
 
