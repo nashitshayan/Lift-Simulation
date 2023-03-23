@@ -147,6 +147,9 @@ const app = (() => {
 		const floors = Array(no_of_floors)
 			.fill(null)
 			.map((_, index) => {
+				const floor_wrapper = elem('div');
+				floor_wrapper.className = 'floor_wrapper';
+
 				const floor_container = elem('div');
 				floor_container.className = 'floor_container';
 
@@ -176,7 +179,7 @@ const app = (() => {
 				floor_name.className = 'floor_name';
 				floor_name.textContent = `Floor ${index + 1}`;
 
-				floor_container.append(lift_btn_container, floor_name);
+				floor_wrapper.append(lift_btn_container, floor_container, floor_name);
 
 				if (index === 0) {
 					const lifts_markup = lifts.map((_, indx) => {
@@ -187,7 +190,7 @@ const app = (() => {
 					});
 					floor_container.append(...lifts_markup);
 				}
-				return floor_container;
+				return floor_wrapper;
 			})
 			.reverse();
 
@@ -199,7 +202,7 @@ const app = (() => {
 		const current_pos = findCurrentPos(lift_div.style.transform);
 
 		const new_pos = 200 * floor_difference;
-
+		console.log(current_pos + new_pos);
 		lift_div.style.transition = `all ${travel_time}s ease-in`;
 		lift_div.style.transform = `translateY(${current_pos + new_pos}px)`;
 		return { lift_div };

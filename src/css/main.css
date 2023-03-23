@@ -90,22 +90,13 @@ footer a {
 #action_panel input[type='number'] {
 	-moz-appearance: textfield;
 }
-#building {
-	min-height: 500px;
-	/* overflow: auto; */
-	background-color: var(--clr--secondary);
-	display: flex;
-	flex-direction: column;
-	justify-content: center;
-	align-items: center;
-	padding: 1em;
-	counter-reset: floor;
-}
+
 #btn_reset,
 #btn_make_building {
 	width: 100%;
 	height: 100%;
-	font-size: 4rem;
+	padding: 0.5em;
+	font-size: min(10vw, 4rem);
 	border: none;
 	border-radius: var(--b-rad);
 	cursor: pointer;
@@ -129,24 +120,44 @@ footer a {
 }
 
 #building {
+	min-height: 500px;
 	width: 100%;
+
+	/* overflow: auto; */
+	background-color: var(--clr--secondary);
 	border-radius: var(--b-rad);
+
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	padding: 1em;
+	counter-reset: floor;
 }
 
-.floor_container {
+.floor_wrapper {
+	display: flex;
+	justify-content: space-between;
+	gap: 0.5em;
 	height: 200px;
-	min-width: 70%;
-	margin: 0 auto;
+}
+.floor_container {
+	flex-basis: 100%;
 	border-bottom: 2px solid var(--clr--primary);
-	position: relative;
 	display: flex;
 	align-items: end;
 	gap: 2em;
+	position: relative;
 }
 
 .lift {
-	width: 80px;
-	height: 150px;
+	min-width: 40px;
+	width: 10vw;
+	max-width: 80px;
+
+	min-height: 50px;
+	height: 15vw;
+	max-height: 100px;
+
 	background-color: var(--clr--primary);
 	position: relative;
 
@@ -161,8 +172,16 @@ footer a {
 .lift::after {
 	content: '';
 	display: block;
-	height: 150px;
-	width: 40px;
+	/* half width of lift */
+	min-width: 20px;
+	width: 5vw;
+	max-width: 40px;
+
+	/* same height as lift */
+	min-height: 50px;
+	height: 15vw;
+	max-height: 100px;
+
 	background-color: var(--clr--lift-doors);
 	position: absolute;
 	animation-duration: var(--door-anim-duration);
@@ -203,23 +222,22 @@ footer a {
 		right: 0;
 	}
 }
-.lift.first {
-	margin-left: 7em;
-}
+
 .lift_btn_container {
-	position: absolute;
-	top: 40%;
 	display: flex;
 	flex-direction: column;
 	gap: 0.5em;
+	align-self: center;
 }
+
 .btn_lift {
-	font-size: 1rem;
 	font-weight: bold;
 	cursor: pointer;
 	border: none;
-	padding: 0.5em 1.5em;
 	border-radius: var(--b-rad);
+	padding: 0.5em;
+	font-size: min(0.7rem, 3vw);
+	width: 4em;
 }
 
 .btn_lift--up {
@@ -231,9 +249,9 @@ footer a {
 
 .floor_name {
 	font-weight: bold;
-	position: absolute;
-	bottom: -0.35em;
-	right: -4.5em;
+	align-self: flex-end;
+	flex-basis: max(6%, 7em);
+	font-size: min(1rem, 3vw);
 }
 
 @media only screen and (min-width: 800px) {
