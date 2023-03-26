@@ -90,12 +90,40 @@ const app = (() => {
 		addDefaultMsg(building_container);
 		toggleContent();
 	};
-
-	const handleLiftUp = (calling_floor) => {
+	function updateLifts(updatedLift) {
 		const store = storeManager.getStore();
+		storeManager.setStore({
+			building: {
+				...store.building,
+				lifts: store.building.lifts.map((oldLift, index) => {
+					if (oldLift.lift_no === updatedLift.lift_no) return updatedLift;
+					return oldLift;
+				}),
+			},
+		});
+	}
+	function handleAnimation({ lift, lift_div, travel_time }) {
+		//remove prev animations
+		setDoorAnimation(lift_div);
+		// add animation after lift reaches the floor
+		setTimeout(() => {
+			setDoorAnimation(lift_div, 'left-door-open', 'right-door-open', '5s');
+
+			setTimeout(() => {
+				const updatedLift = { ...lift, isAvailable: true };
+				updateLifts(updatedLift);
+				if (!queueManager.isEmpty()) {
+					handleLiftMovement(queueManager.dequeue().calling_floor);
+				}
+			}, 5 * 1000);
+		}, travel_time * 1000);
+	}
+
+	const handleLiftMovement = (calling_floor) => {
 		const {
 			building: { lifts },
-		} = store;
+		} = storeManager.getStore();
+
 		const isSameFloor = lifts.some(
 			(lift) => lift.current_floor === calling_floor,
 		);
@@ -106,21 +134,15 @@ const app = (() => {
 		}
 
 		const nearestLift = findNearestLift(lifts, calling_floor);
+
 		if (nearestLift?.isAvailable) {
 			let updatedLift = {
 				...nearestLift,
 				current_floor: calling_floor,
 				isAvailable: false,
 			};
-			storeManager.setStore({
-				building: {
-					...store.building,
-					lifts: store.building.lifts.map((oldLift, index) => {
-						if (oldLift.lift_no === updatedLift.lift_no) return updatedLift;
-						return oldLift;
-					}),
-				},
-			});
+			updateLifts(updatedLift);
+
 			const nearest_lift_no = updatedLift.lift_no;
 			const floor_difference = nearestLift.current_floor - calling_floor;
 			const travel_time = Math.abs(floor_difference) * 2;
@@ -130,40 +152,10 @@ const app = (() => {
 				floor_difference,
 				travel_time,
 			);
-
-			//remove prev animations
-			setDoorAnimation(lift_div);
-			// add animation after lift reaches the floor
-			setTimeout(() => {
-				setDoorAnimation(lift_div, 'left-door-open', 'right-door-open', '5s');
-
-				setTimeout(() => {
-					const store = storeManager.getStore();
-					updatedLift = { ...updatedLift, isAvailable: true };
-					storeManager.setStore({
-						building: {
-							...store.building,
-							lifts: store.building.lifts.map((oldLift, index) => {
-								if (oldLift.lift_no === updatedLift.lift_no) {
-									return updatedLift;
-								}
-								return oldLift;
-							}),
-						},
-					});
-					// console.log(storeManager.getStore());
-					if (!queueManager.isEmpty()) {
-						handleLiftUp(queueManager.dequeue().calling_floor);
-					}
-				}, 5 * 1000);
-			}, travel_time * 1000);
+			handleAnimation({ updatedLift, lift_div, travel_time });
 		} else {
 			queueManager.enqueue({ calling_floor });
 		}
-	};
-
-	const handleLiftDown = (calling_floor) => {
-		handleLiftUp(calling_floor);
 	};
 
 	build_btn.addEventListener('click', handleMakeBuilding);
@@ -209,9 +201,11 @@ const app = (() => {
 				}`;
 				lift_btn_down.textContent = 'Down';
 
-				lift_btn_up.addEventListener('click', () => handleLiftUp(index + 1));
+				lift_btn_up.addEventListener('click', () =>
+					handleLiftMovement(index + 1),
+				);
 				lift_btn_down.addEventListener('click', () =>
-					handleLiftDown(index + 1),
+					handleLiftMovement(index + 1),
 				);
 
 				lift_btn_container.append(lift_btn_up, lift_btn_down);
@@ -238,7 +232,7 @@ const app = (() => {
 		container.append(...floors);
 	}
 	function moveLift(lift_no, floor_difference, travel_time) {
-		const lift_div = document.querySelector(`[data-lift_no='${lift_no}']`);
+		const lift_div = grabLift(lift_no);
 		const current_pos = findCurrentPos(lift_div.style.transform);
 
 		const new_pos = 200 * floor_difference;
@@ -291,7 +285,6 @@ function findNearestLift(lifts, calling_floor) {
 		floor_diff: Math.abs(lift.current_floor - calling_floor),
 	}));
 	const avails = diffs.filter((l) => l.isAvailable);
-	// console.log({ diffs, avails });
 	const result = avails.sort((a, b) =>
 		a.floor_diff < b.floor_diff ? -1 : a.floor_diff > b.floor_diff ? 1 : 0,
 	)[0];
@@ -305,7 +298,9 @@ function findCurrentPos(str) {
 function elem(el) {
 	return document.createElement(el);
 }
-
+function grabLift(id) {
+	return document.querySelector(`[data-lift_no='${id}']`);
+}
 // function getFloorName(floor_no) {
 // 	if (floor_no === 0) return 'Ground Floor';
 // 	else return `Floor ${floor_no}`;
