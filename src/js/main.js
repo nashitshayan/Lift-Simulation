@@ -102,7 +102,7 @@ const app = (() => {
 			},
 		});
 	}
-	function handleAnimation({ lift, lift_div, travel_time }) {
+	function handleAnimation(lift, lift_div, travel_time) {
 		//remove prev animations
 		setDoorAnimation(lift_div);
 		// add animation after lift reaches the floor
@@ -124,12 +124,15 @@ const app = (() => {
 			building: { lifts },
 		} = storeManager.getStore();
 
-		const isSameFloor = lifts.some(
+		const lift_on_curr_floor = lifts.find(
 			(lift) => lift.current_floor === calling_floor,
 		);
 
-		if (isSameFloor) {
-			alert('The lift is already on current floor.');
+		if (lift_on_curr_floor) {
+			handleAnimation(
+				lift_on_curr_floor,
+				grabLift(lift_on_curr_floor.lift_no, 0),
+			);
 			return;
 		}
 
@@ -152,7 +155,7 @@ const app = (() => {
 				floor_difference,
 				travel_time,
 			);
-			handleAnimation({ updatedLift, lift_div, travel_time });
+			handleAnimation(updatedLift, lift_div, travel_time);
 		} else {
 			queueManager.enqueue({ calling_floor });
 		}
