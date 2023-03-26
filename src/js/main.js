@@ -51,6 +51,9 @@ const queueManager = (() => {
 	return { enqueue, dequeue, isEmpty, getQueue, clearQueue };
 })();
 
+function isMobile() {
+	return window.innerWidth < 500;
+}
 const app = (() => {
 	const {
 		build_btn,
@@ -69,9 +72,11 @@ const app = (() => {
 			alert('please enter no of floors and lifts');
 			return;
 		}
-		if (no_of_lifts > 6) {
+
+		let maxLifts = isMobile() ? 3 : 8;
+		if (no_of_lifts > maxLifts) {
 			alert(
-				"Sorry! Currently, we only have space for maximum 6 lifts. We're working to expand it!",
+				`Sorry! Currently, we only have space for maximum ${maxLifts} lifts. We're working to expand it!`,
 			);
 			return;
 		}
