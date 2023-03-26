@@ -90,34 +90,6 @@ const app = (() => {
 		addDefaultMsg(building_container);
 		toggleContent();
 	};
-	function updateLifts(updatedLift) {
-		const store = storeManager.getStore();
-		storeManager.setStore({
-			building: {
-				...store.building,
-				lifts: store.building.lifts.map((oldLift, index) => {
-					if (oldLift.lift_no === updatedLift.lift_no) return updatedLift;
-					return oldLift;
-				}),
-			},
-		});
-	}
-	function handleAnimation(lift, lift_div, travel_time) {
-		//remove prev animations
-		setDoorAnimation(lift_div);
-		// add animation after lift reaches the floor
-		setTimeout(() => {
-			setDoorAnimation(lift_div, 'left-door-open', 'right-door-open', '5s');
-
-			setTimeout(() => {
-				const updatedLift = { ...lift, isAvailable: true };
-				updateLifts(updatedLift);
-				if (!queueManager.isEmpty()) {
-					handleLiftMovement(queueManager.dequeue().calling_floor);
-				}
-			}, 5 * 1000);
-		}, travel_time * 1000);
-	}
 
 	const handleLiftMovement = (calling_floor) => {
 		const {
@@ -242,6 +214,34 @@ const app = (() => {
 		lift_div.style.transition = `all ${travel_time}s ease-in`;
 		lift_div.style.transform = `translateY(${current_pos + new_pos}px)`;
 		return { lift_div };
+	}
+	function updateLifts(updatedLift) {
+		const store = storeManager.getStore();
+		storeManager.setStore({
+			building: {
+				...store.building,
+				lifts: store.building.lifts.map((oldLift, index) => {
+					if (oldLift.lift_no === updatedLift.lift_no) return updatedLift;
+					return oldLift;
+				}),
+			},
+		});
+	}
+	function handleAnimation(lift, lift_div, travel_time) {
+		//remove prev animations
+		setDoorAnimation(lift_div);
+		// add animation after lift reaches the floor
+		setTimeout(() => {
+			setDoorAnimation(lift_div, 'left-door-open', 'right-door-open', '5s');
+
+			setTimeout(() => {
+				const updatedLift = { ...lift, isAvailable: true };
+				updateLifts(updatedLift);
+				if (!queueManager.isEmpty()) {
+					handleLiftMovement(queueManager.dequeue().calling_floor);
+				}
+			}, 5 * 1000);
+		}, travel_time * 1000);
 	}
 	function setDoorAnimation(
 		lift_div,
