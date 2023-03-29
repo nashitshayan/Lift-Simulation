@@ -33,6 +33,12 @@ const queueManager = (() => {
 	let queue = [];
 
 	function enqueue(task) {
+		const duplicate = queue.find(
+			(ot) => ot.calling_floor === task.calling_floor,
+		);
+		if (duplicate) {
+			return;
+		}
 		queue.push(task);
 	}
 	function dequeue() {
@@ -105,16 +111,23 @@ const app = (() => {
 			(lift) => lift.current_floor === calling_floor,
 		);
 
-		if (lift_on_curr_floor) {
+		if (lift_on_curr_floor && lift_on_curr_floor.isAvailable) {
+			let updatedLift = {
+				...lift_on_curr_floor,
+				current_floor: calling_floor,
+				isAvailable: false,
+			};
+			updateLifts(updatedLift);
 			handleAnimation(
 				lift_on_curr_floor,
 				grabLift(lift_on_curr_floor.lift_no, 0),
 			);
 			return;
+		} else if (lift_on_curr_floor) {
+			return;
 		}
 
 		const nearestLift = findNearestLift(lifts, calling_floor);
-
 		if (nearestLift?.isAvailable) {
 			let updatedLift = {
 				...nearestLift,
